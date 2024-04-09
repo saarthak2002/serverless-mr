@@ -19,7 +19,7 @@ def lambda_handler(event, context):
     mapper_input_file = event['mapper_input_file']
     s3_client = boto3.client('s3')
     data = s3_client.get_object(Bucket='mr-input', Key=mapper_input_file)
-    contents = data['Body'].read().decode('ascii')
+    contents = data['Body'].read().decode('utf-8')
     
     # Get the number of reducers
     number_of_reducers = event['number_of_reducers']

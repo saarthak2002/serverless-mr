@@ -1,10 +1,13 @@
 import boto3
 import json
+import time
 
 ## Helpful commands
 # Clear intermediate results: aws s3 rm s3://mr-intermediate --recursive
+# Clear input results: aws s3 rm s3://mr-input --recursive
+# Clear output results: aws s3 rm s3://mr-results-output --recursive
 
-NUM_REDUCERS = 7
+NUM_REDUCERS = 80
 
 def main():
     s3_client = boto3.client('s3')
@@ -23,47 +26,40 @@ def main():
         )
         print(resp)
 
-
-    ## IGNORE:
-    # words = []
-    # data = s3_client.get_object(Bucket='mr-input', Key='pg-dorian_gray.txt')
-    # contents = data['Body'].read().decode('ascii')
-    # filtered_content = ''.join([char if char.isalpha() or char.isspace() or char == "'" else ' ' for char in contents])
-    # words.extend(filtered_content.split())
-    # kv_list = list()
-    # for word in words:
-    #     kv_list.append((word.lower(), 1))
-    # print(json.dumps(kv_list))
-    # # mr-intermediate
-    # intermediate_results = [list() for _ in range(5)]
-    # for kv_pair in kv_list:
-    #     kv_key = kv_pair[0]
-    #     bucket_id = hash(kv_key) % 5
-    #     intermediate_results[bucket_id].append(kv_pair)
-    # print(intermediate_results)
-
-    # print(contents)
-    # filtered_content = ''.join([char if char.isalpha() or char.isspace() or char == "'" else ' ' for char in contents])
-    # print(filtered_content)
-    # corpus.extend(filtered_content.split())
-
-    # for key in s3_client.list_objects(Bucket='mr-input')['Contents']:
-    #     data = s3_client.get_object(Bucket='mr-input', Key=key["Key"])
-    #     contents = data['Body'].read()
-    #     print(contents)
-
+    total_reducers_ready = 0
+    reducer_ready = [False] * NUM_REDUCERS
+    print(reducer_ready)
     
-    # response = s3_client.list_buckets()
-    # print(response)
-
-    # resp = lambda_client.invoke( 
-    #     FunctionName = "mapper",
-    #     InvocationType = 'Event',
-    #     Payload =  json.dumps({
-    #         "payload": "Hello from runner.py"
-    #     })
-    # )
-    # print(resp)
+    while total_reducers_ready < NUM_REDUCERS:
+        for reducer_id in range(NUM_REDUCERS):
+            s3_objects_request_response = s3_client.list_objects_v2(Bucket='mr-intermediate', Prefix='{}_'.format(reducer_id))
+            key_count = s3_objects_request_response['KeyCount']
+            
+            num_inter_files = 0
+            if key_count > 0:
+                num_inter_files = len(s3_objects_request_response['Contents'])
+            
+            if num_inter_files == num_mapper:
+                reducer_ready[reducer_id] = True
+                total_reducers_ready += 1
+                # invoke reducer with id reducer_id
+                
+                keys = [item['Key'] for item in s3_objects_request_response['Contents']]
+                print("call reducer {}".format(reducer_id))
+                print("with files: {}".format(keys))
+                resp = lambda_client.invoke( 
+                    FunctionName = "reducer",
+                    InvocationType = 'Event',
+                    Payload =  json.dumps({
+                        "reducer_input_files": keys,
+                        "number_of_reducers": NUM_REDUCERS,
+                        "reducer_id": reducer_id
+                    })
+                )
+                print(resp)
+                
+        print(reducer_ready)
+        time.sleep(1)
 
 if __name__ == '__main__':
     main()
