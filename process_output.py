@@ -17,4 +17,6 @@ for item in response['Contents']:
         else:
             wc[k] += v
     
-print(wc['the'])
+wc_sorted = sorted(wc.items(), key=lambda item: item[1], reverse=True)
+for word, count in wc_sorted[:20]:
+    print(f"{word}, {count}")

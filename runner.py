@@ -62,4 +62,7 @@ def main():
         time.sleep(1)
 
 if __name__ == '__main__':
+    start_time = time.time()
     main()
+    end_time = time.time()
+    print("Execution Time: {}".format(end_time - start_time))
