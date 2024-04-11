@@ -1,0 +1,6 @@
+\section{Related Work}
+\label{sec:related_work}
+
+A similar project called MARLA~\cite{marla} to implement Serverless MapReduce was undertaken by the GRyCAP research group. The biggest difference between their architecture and ours is that they use a coordinator Lambda function that is triggered on an S3 bucket upload event. This coordinator Lambda is responsible for spawning Mappers, checking what Reducers are ready to run, the shuffle stage, and running the Reducers. In this architecture, the coordinator Lambda is likely to serve as a bottleneck for large jobs, as Lambda functions have a maximum runtime of 900 seconds and a maximum memory of 10,240 MB.
+
+Another project called  Corral~\cite{corral} implements a similar architecture to what we have. It offers two ways to run the MapReduce job, either with a Coordinator Lambda function or using client-side code running locally on the user's machine. This implementation is written in Go and takes advantage of thread-level parallelism, which is not possible in a Python implementation. Due to this, it may offer faster performance overall for the coordinator's implementation.

@@ -1,0 +1,10 @@
+\section{Introduction}
+\label{sec:introduction}
+
+MapReduce is a massively parallel, distributed computation paradigm pioneered by Google~\cite{dean2004mapreduce} in response to their growing need for batch processing of data. The user of the model defines two functions: Map: (Key, Value) → (Key, Value) and Reduce: (Key, value list[]) → output. The map phase performs filtering and sorting, and the reduce phase performs a summary operation to yield the final output.
+
+Historically, hosting applications on the internet requires provisioning and managing physical or virtual servers. More recently, an advent has been observed in Function-as-a-service (FaaS) applications, which is a serverless architecture that allows the execution of code in response to events without having to build out any complex server infrastructure. We want to adapt MapReduce to this new computation architecture.
+
+Traditionally, MapReduce is performed on a multi-node cluster that requires huge investment for hardware and supporting infrastructure in data centers like networking, power, cooling, etc. (building data centers can cost \$125-\$200+ per sq. foot). Even the costs of renting out servers from a company like Amazon can add up quickly – a one-year EC2 Instance Savings Plan works out to \$1,060. On the other hand, AWS Lambda is very cost-effective at only \$0.20 per one million requests, and S3 buckets cost \$0.023 per GB. Combined with the dynamic scalability of FaaS, a serverless service like AWS Lambda seems like a perfect platform to implement MapReduce.
+
+In this paper, we describe our implementation of MapReduce with this Serverless design paradigm in mind. In section 2, we focus on the architecture of our implementation and how various components work together to make MapReduce work. In section 3, we present our testing framework and performance evaluation of our implementation. In section 4, we discuss other related work and methodologies. Finally, in section 5 we draw conclusions based on what we learned while implementing MapReduce Severlessly and section 6 has links to our open-source implementation.
