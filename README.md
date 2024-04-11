@@ -10,8 +10,8 @@ The files in this repository are described below:
 
 _runner.py_: Client side code used by the user to schedule map and reduce workers.
 
-_mapper\_lambda\_function.py_: Code running on the Mapper AWS Lambda instances. The user defines a _Map(K, V) -> [(K, V)]_ function here.
+_mapper\_lambda\_function.py_: Code running on the Mapper AWS Lambda instances. The user defines a _Map(K, V) → [(K, V)]_ function here.
 
-_reducer\_lambda\_handler.py_: Code running on the Reducer AWS Lambda instances. The user defines a _Reduce(K, Val-list) -> Output_ function here.
+_reducer\_lambda\_handler.py_: Code running on the Reducer AWS Lambda instances. The user defines a _Reduce(K, Val-list) → Output_ function here.
 
 _process\_output.py_: Tester file to combine the output of the word count example job.
