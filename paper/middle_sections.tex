@@ -51,4 +51,37 @@ A typical run of a Serverless MapReduce job looks as follows:
 
 \section{Testing}
 
-[\textbf{TODO}: We have tested the validity of our implementation and it produces correct results for the project Gutenberg dataset. We plan to benchmark the performance of our implementation and compare it to other MapReduce implementations.]
+To evaluate the correctness of our MapReduce implementation and benchmark its performance, we decided to use the classic word count MapReduce task. We used books from the Project Gutenberg library to create input data sets of various sizes for our testing. The user-defined map and reduce functions for this task are presented below. This is the only thing the user has to specify in addition to the input files and number of reducers.
+
+\begin{algorithm}
+\caption{Map Function For Word Count}
+\begin{algorithmic}[1]
+\Function{UserMapFunction}{$k, v$}
+    \State $words \gets [filtered~words~from~v]$
+    \State $kv\_list \gets []$
+    \For{$word$ \textbf{in} $words$}
+        \State $kv\_list$.append(($word$.lower(), 1))
+    \EndFor
+    \State \Return $kv\_list$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Reduce Function For Word Count}
+\begin{algorithmic}[2]
+\Function{UserReduceFunction}{$k, \text{val\_list[]}$}
+    \State \Return $\text{len}(\text{val\_list})$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Methodology}
+
+Using different books from the Project Gutenberg repository, we created test cases of increasing sizes. The number of Mapper Lambdas invoked is equal to the number of input files or chunks, and the number of Reducer Lambdas invoked is specified by the user. We created three total test cases: small, medium, and large. These scale from tens of Lambdas to about a thousand concurrently executing Lambda functions.
+
+The different testing scenarios and their average completion times are presented in Table I. The current configurations allow 1,000 concurrent Lambda invocations, so some throttling was observed in the largest test case.
+
+Each test scenario was run five times to obtain the average completion time across all runs. The number of reducers used was scaled appropriately based on how many input chunks each test scenario had. Making the number of reducers too small would result in Lambda invocations timing out as each reducer was overloaded with a lot more work, causing it to use up all its working memory and not finish before the timeout.
+
+\subsection{Results}

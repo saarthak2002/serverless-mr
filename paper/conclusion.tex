@@ -1,3 +1,16 @@
 \section{Conclusion}
 
-[\textbf{TODO}: Draw conclusions about the feasibility of Serverless MapReduce based on the implementation process and the results obtained during the benchmarking.]
+
+\subsection{Cost}
+
+Based on current Lambda and S3 prices, the cost of a single job can be calculated as:
+\[\$0.0000002 * invocations + \$0.00001667 * GB\_seconds \]
+\[+ S3\_cost\]
+
+\subsection{Other Design Considerations}
+
+There are other design considerations to be made for a production system. We offer an overview of such conditions in this section.
+
+AWS S3 buckets allow very high throughput; however, for a large enough data set, bucket IO may become a bottleneck. Our proposal to overcome this is to further divide the input, intermediate, and output buckets into multiple sub-buckets. In our current design, we use a single S3 bucket for each level of IO. Lambda functions can have a cold-start cost associated with them, as AWS may unload the function between invocations. A naive way to overcome this is to periodically schedule the Lambdas to execute even if there is no real workload in order to keep them primed. AWS also provides the option of provisioned concurrency, which allows pre-initialized execution environments for Lambda functions.
+
+Another consideration is Lambda failures. These are rare but may occur due to a function hitting its memory or time limits. To deal with these, the runtime can be modified to monitor for these errors by looking at the files output to the S3 buckets. If a file does not appear within a timeout, the map or reduce task may be re-scheduled. Stragglers can be dealt with in a similar way by treating slow Lambdas as failed Lambdas when the job is nearing completion. The timeout for these should be lower than the maximum timeout for the Lambda function. AWS poses some limits on how many concurrent Lambdas can be executed, which may act as a bottleneck to scalability. However, these limits can be increased by special requests.
