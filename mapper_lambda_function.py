@@ -16,9 +16,10 @@ def user_map_function(k, v):
 def lambda_handler(event, context):
     
     # Get the input file content from the input bucket
+    input_bucket_name = event['input_bucket']
     mapper_input_file = event['mapper_input_file']
     s3_client = boto3.client('s3')
-    data = s3_client.get_object(Bucket='mr-input', Key=mapper_input_file)
+    data = s3_client.get_object(Bucket=input_bucket_name, Key=mapper_input_file)
     contents = data['Body'].read().decode('utf-8')
     
     # Get the number of reducers
