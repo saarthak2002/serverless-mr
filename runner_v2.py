@@ -22,20 +22,43 @@ NUM_REDUCERS = 800
 start_time = time.time()
 end_time = time.time()
 
+total_count = 0
+continuation_token = None
+
+s3_client = boto3.client('s3')
+lambda_client = boto3.client('lambda')
+
+def count_files_in_bucket(bucket_name):
+    global continuation_token
+    global total_count
+    while True:
+        if continuation_token:
+            response = s3_client.list_objects_v2(Bucket=bucket_name, ContinuationToken=continuation_token)
+        else:
+            total_count = 0
+            response = s3_client.list_objects_v2(Bucket=bucket_name)
+        
+        total_count += len(response['Contents'])
+
+        if 'NextContinuationToken' in response:
+            continuation_token = response['NextContinuationToken']
+        else:
+            break
+
 def main():
-    s3_client = boto3.client('s3')
-    lambda_client = boto3.client('lambda')
+    global continuation_token
+    global total_count
     all_input = s3_client.list_objects(Bucket=INPUT_BUCKET)['Contents']
     num_mapper = len(all_input)
     
     print("Welcome to Serverless MapReduce")
     print("Number of mappers: {}".format(num_mapper))
     print("Number of reducers: {}".format(NUM_REDUCERS))
+    
     # Invoke mapper lambdas for each input file
     print("\n[System] Invoking mappers...")
     with tqdm(total=num_mapper) as pbar:
         for key in all_input:
-            # print("call mapper on {}".format(key))
             resp = lambda_client.invoke( 
                 FunctionName = "mapper",
                 InvocationType = 'Event',
@@ -46,46 +69,38 @@ def main():
                 })
             )
             pbar.update(1)
-        # print(resp)
 
+    print("\n[System] Waiting for all intermediate files to be ready...")
+    while True:
+        count_files_in_bucket('mr-intermediate-new')
+        print(total_count)
+        if total_count == (num_mapper * NUM_REDUCERS):
+            print(total_count)
+            break
+        time.sleep(5)
+
+    print("\n[System] All intermediate files are ready")
+    
     total_reducers_ready = 0
-    reducer_ready = [False] * NUM_REDUCERS
-    # print(reducer_ready)
     
     print("\n[System] Invoking reducers...")
     with tqdm(total=NUM_REDUCERS) as pbar:
-        while total_reducers_ready < NUM_REDUCERS:
-            for reducer_id in range(NUM_REDUCERS):
-                s3_objects_request_response = s3_client.list_objects_v2(Bucket='mr-intermediate-new', Prefix='{}_'.format(reducer_id))
-                key_count = s3_objects_request_response['KeyCount']
-                
-                num_inter_files = 0
-                if key_count > 0:
-                    num_inter_files = len(s3_objects_request_response['Contents'])
-                
-                if num_inter_files == num_mapper:
-                    reducer_ready[reducer_id] = True
-                    total_reducers_ready += 1
-                    # invoke reducer with id reducer_id
-                    
-                    keys = [item['Key'] for item in s3_objects_request_response['Contents']]
-                    # print("call reducer {}".format(reducer_id))
-                    # print("with files: {}".format(keys))
-                    resp = lambda_client.invoke( 
-                        FunctionName = "reducer",
-                        InvocationType = 'Event',
-                        Payload =  json.dumps({
-                            "reducer_input_files": keys,
-                            "number_of_reducers": NUM_REDUCERS,
-                            "reducer_id": reducer_id
-                        })
-                    )
-                    pbar.update(1)
-                    
-                    # print(resp)
-                    
-            # print(reducer_ready)
-            time.sleep(1)
+        for reducer_id in range(NUM_REDUCERS):
+            # invoke reducer with id reducer_id
+            s3_objects_request_response = s3_client.list_objects_v2(Bucket='mr-intermediate-new', Prefix='{}_'.format(reducer_id))
+            keys = [item['Key'] for item in s3_objects_request_response['Contents']]
+            
+            resp = lambda_client.invoke( 
+                FunctionName = "reducer",
+                InvocationType = 'Event',
+                Payload =  json.dumps({
+                    "reducer_input_files": keys,
+                    "number_of_reducers": NUM_REDUCERS,
+                    "reducer_id": reducer_id
+                })
+            )
+            total_reducers_ready += 1
+            pbar.update(1)
     
     # check how many outputs are ready
     ready_output = 0

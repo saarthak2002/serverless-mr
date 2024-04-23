@@ -2,7 +2,7 @@ import boto3
 import json
 
 s3 = boto3.client('s3')
-bucket_name = 'mr-results-output'
+bucket_name = 'mr-output-new'
 response = s3.list_objects_v2(Bucket=bucket_name)
 
 wc = dict()
