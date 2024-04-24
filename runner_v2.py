@@ -16,34 +16,48 @@ from tqdm import tqdm
 # mr-input-1
 # mr-input-2-new
 
-INPUT_BUCKET = 'mr-input-3-new'
-NUM_REDUCERS = 800
+INPUT_BUCKET = 'mr-input-2-new'
+NUM_REDUCERS = 80
 
 start_time = time.time()
 end_time = time.time()
 
-total_count = 0
-continuation_token = None
+# total_count = 0
+# continuation_token = None
 
 s3_client = boto3.client('s3')
 lambda_client = boto3.client('lambda')
 
-def count_files_in_bucket(bucket_name):
-    global continuation_token
-    global total_count
-    while True:
-        if continuation_token:
-            response = s3_client.list_objects_v2(Bucket=bucket_name, ContinuationToken=continuation_token)
-        else:
-            total_count = 0
-            response = s3_client.list_objects_v2(Bucket=bucket_name)
+# def count_files_in_bucket(bucket_name):
+#     global continuation_token
+#     global total_count
+#     while True:
+#         if continuation_token:
+#             response = s3_client.list_objects_v2(Bucket=bucket_name, ContinuationToken=continuation_token)
+#         else:
+#             total_count = 0
+#             response = s3_client.list_objects_v2(Bucket=bucket_name)
         
-        total_count += len(response['Contents'])
+#         if 'Contents' in response:
+#             total_count += len(response['Contents'])
 
-        if 'NextContinuationToken' in response:
-            continuation_token = response['NextContinuationToken']
-        else:
-            break
+#         if 'NextContinuationToken' in response:
+#             continuation_token = response['NextContinuationToken']
+#         else:
+#             break
+
+def count_objects_in_bucket(bucket_name):
+    total_objects = 0
+    s3 = boto3.client('s3')
+
+    paginator = s3.get_paginator('list_objects_v2')
+    response_iterator = paginator.paginate(Bucket=bucket_name)
+
+    for page in response_iterator:
+        if 'Contents' in page:
+            total_objects += len(page['Contents'])
+
+    return total_objects
 
 def main():
     global continuation_token
@@ -72,7 +86,8 @@ def main():
 
     print("\n[System] Waiting for all intermediate files to be ready...")
     while True:
-        count_files_in_bucket('mr-intermediate-new')
+        # count_files_in_bucket('mr-intermediate-new')
+        total_count = count_objects_in_bucket('mr-intermediate-new')
         print(total_count)
         if total_count == (num_mapper * NUM_REDUCERS):
             print(total_count)
