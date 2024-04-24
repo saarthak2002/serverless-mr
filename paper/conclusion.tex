@@ -1,15 +1,35 @@
 \section{Conclusion}
 
+The implementation of a Serverless MapReduce framework on AWS Lambda presents a promising approach to handling large-scale data processing tasks efficiently and cost-effectively. Through our testing and evaluation, we have observed several key findings that support the feasibility and effectiveness of this approach for production workloads.
+
+Firstly, the performance of our Serverless MapReduce implementation has demonstrated scalability and rapid execution times across varying sizes of input datasets. Even under considerable loads, with nearly 1,000 concurrently executing Lambdas, our framework maintained relatively low average completion times. This highlights the inherent advantage of leveraging the highly parallel nature of AWS Lambda functions and the rapid IO capabilities of AWS S3.
 
 \subsection{Cost}
+
+The cost analysis reveals the economic benefits of utilizing a Serverless architecture for MapReduce tasks. By leveraging AWS Lambda and S3, the operational costs associated with hardware provisioning and maintenance are significantly reduced. The pay-per-invocation model of AWS Lambda and the low storage costs of S3 contribute to a cost-effective solution for batch processing of large datasets.
 
 Based on current Lambda and S3 prices, the cost of a single job can be calculated as:
 \[\$0.0000002 * invocations + \$0.00001667 * GB\_seconds \]
 \[+ S3\_cost\]
 
+Data transfer between AWS Lambda and S3 is free in the same region, which makes the S3 cost very small. The cost of the Lambdas depends on both the number of invocations and the duration the function runs for (GB-seconds). Based on the number of mapper and reducer Lambda invocations as well as the average running duration, we calculated the AWS Lambda cost associated with each test case. Then, based on the amount of data stored in the input, intermediate, and output buckets, we calculated the S3 cost. Finally, we added these for each test case to obtain an estimated cost. Table II shows the estimated cost for each test case. See Appendix A for the data that was used to estimate these costs.
+
+\begin{table}[]
+\centering
+\begin{tabular}{|cc|}
+\hline
+\multicolumn{2}{|c|}{Table II. Average Estimated Cost Of Job} \\ \hline
+\multicolumn{1}{|c|}{Test}           & Estimated Cost         \\ \hline
+\multicolumn{1}{|c|}{Small}          & \$0.0003               \\
+\multicolumn{1}{|c|}{Medium}         & \$0.104                \\
+\multicolumn{1}{|c|}{Large}          & \$0.514                \\ \hline
+\end{tabular}
+\end{table}
+
 \subsection{Other Design Considerations}
 
-There are other design considerations to be made for a production system. We offer an overview of such conditions in this section.
+Our evaluation also identifies potential areas for optimization and future enhancements. By exploring strategies such as increasing Lambda concurrency limits and subdividing S3 buckets, we can further enhance the scalability and performance of our Serverless MapReduce framework. Additionally, considerations such as managing Lambda cold starts and handling failures can be addressed to ensure robustness and reliability in production environments.
+There are many design considerations to be made for a production system. We offer an overview of such conditions in this section.
 
 AWS S3 buckets allow very high throughput; however, for a large enough data set, bucket IO may become a bottleneck. Our proposal to overcome this is to further divide the input, intermediate, and output buckets into multiple sub-buckets. In our current design, we use a single S3 bucket for each level of IO. Lambda functions can have a cold-start cost associated with them, as AWS may unload the function between invocations. A naive way to overcome this is to periodically schedule the Lambdas to execute even if there is no real workload in order to keep them primed. AWS also provides the option of provisioned concurrency, which allows pre-initialized execution environments for Lambda functions.
 

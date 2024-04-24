@@ -32,12 +32,13 @@
 %-------------------------------------------------------------------------------
 \begin{abstract}
 %-------------------------------------------------------------------------------
-MapReduce is a scalable computation model that allows batch processing of enormous datasets. Serverless computing is a cloud programming paradigm in which software can be deployed with resources allocated on-demand without the need to manage server infrastructure. We wanted to bring these two models together and create a Serverless MapReduce implementation that provides the advantages of both worlds, like cost-effectiveness, elasticity, and parallelism. We used AWS Lambda to invoke cloud functions that perform map or reduce tasks and AWS S3 as a distributed object store for inputs, outputs, and intermediate data. Our implementation is able to scale to thousands of concurrently executing Lambdas. We tested out the classic word count MapReduce example for a wide range of input data set sizes. In our testing, our Serverless runtime is able to take advantage of the highly scalable nature of AWS Lambda. The smallest test case ran in under 10 seconds, and the largest, with about 1,000 concurrently executing functions, in about \_\_\_ seconds. We conclude that Serverless environments are feasible and effective for running MapReduce-style jobs, and further work in this area can lead to exceptional production systems.
+MapReduce is a scalable computation model that allows batch processing of enormous datasets. Serverless computing is a cloud programming paradigm in which software can be deployed with resources allocated on-demand without the need to manage server infrastructure. We wanted to bring these two models together and create a Serverless MapReduce implementation that provides the advantages of both worlds, like cost-effectiveness, elasticity, and parallelism. We used AWS Lambda to invoke cloud functions that perform map or reduce tasks and AWS S3 as a distributed object store for inputs, outputs, and intermediate data. Our implementation is able to scale to thousands of concurrently executing Lambdas. We tested out the classic word count MapReduce example for a wide range of input data set sizes. In our testing, our Serverless runtime is able to take advantage of the highly scalable nature of AWS Lambda. The smallest test case ran in under 10 seconds, and the largest, with about 1,000 concurrently executing functions, in about 800 seconds. We conclude that Serverless environments are feasible and effective for running MapReduce-style jobs, and further work in this area can lead to exceptional production systems.
 \end{abstract}
 
 \input{introduction}
 
-\input{middle_sections}
+% \input{middle_sections}
+\input{project_latex_template/arch}
 
 % \begin{table*}[t]
 % \centering
@@ -49,17 +50,19 @@ MapReduce is a scalable computation model that allows batch processing of enormo
 % \end{tabular}
 % \end{table*}
 
-\begin{table*}[t]
+\begin{table*}[h]
 \centering
 \begin{tabular}{|ccccccc|}
 \hline
 \multicolumn{7}{|c|}{Table I. Average Time to Complete MapReduce Jobs for Different Input Datasets}                                                                                                                                                                                                                                                                                                                                                                                                                                                               \\ \hline
 \multicolumn{1}{|c|}{Test}   & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Number \\ of Files\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Average \\ File Size \\ (KB)\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Total \\ Input Data \\ Size (MB)\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Number \\ of Mappers\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Number \\ of Reducers\end{tabular}} & \begin{tabular}[c]{@{}c@{}}Average Time \\ To Completion\\ (s)\end{tabular} \\ \hline
-\multicolumn{1}{|c|}{Small}  & \multicolumn{1}{c|}{8}                                                          & \multicolumn{1}{c|}{412}                                                                  & \multicolumn{1}{c|}{3.3}                                                                      & \multicolumn{1}{c|}{8}                                                            & \multicolumn{1}{c|}{6}                                                             & 7.54                                                                        \\
-\multicolumn{1}{|c|}{Medium} & \multicolumn{1}{c|}{98}                                                         & \multicolumn{1}{c|}{628}                                                                  & \multicolumn{1}{c|}{61.6}                                                                     & \multicolumn{1}{c|}{98}                                                           & \multicolumn{1}{c|}{80}                                                            & 190.33                                                                      \\
-\multicolumn{1}{|c|}{Large}  & \multicolumn{1}{c|}{932}                                                        & \multicolumn{1}{c|}{687}                                                                  & \multicolumn{1}{c|}{644.1}                                                                    & \multicolumn{1}{c|}{932}                                                          & \multicolumn{1}{c|}{800}                                                           & 4455.53                                                                     \\ \hline
+\multicolumn{1}{|c|}{Small}  & \multicolumn{1}{c|}{8}                                                          & \multicolumn{1}{c|}{412}                                                                  & \multicolumn{1}{c|}{3.3}                                                                      & \multicolumn{1}{c|}{8}                                                            & \multicolumn{1}{c|}{6}                                                             & 6.12                                                                        \\
+\multicolumn{1}{|c|}{Medium} & \multicolumn{1}{c|}{98}                                                         & \multicolumn{1}{c|}{628}                                                                  & \multicolumn{1}{c|}{61.6}                                                                     & \multicolumn{1}{c|}{98}                                                           & \multicolumn{1}{c|}{80}                                                            & 26.44                                                                      \\
+\multicolumn{1}{|c|}{Large}  & \multicolumn{1}{c|}{932}                                                        & \multicolumn{1}{c|}{687}                                                                  & \multicolumn{1}{c|}{644.1}                                                                    & \multicolumn{1}{c|}{932}                                                          & \multicolumn{1}{c|}{800}                                                           & 864.77                                                                     \\ \hline
 \end{tabular}
 \end{table*}
+
+\input{project_latex_template/testing}
 
 \input{related_work}
 
@@ -70,6 +73,20 @@ MapReduce is a scalable computation model that allows batch processing of enormo
 %-------------------------------------------------------------------------------
 \bibliographystyle{plain}
 \bibliography{ref}
+
+\clearpage
+\section*{Appendix A}
+\begin{table}[h]
+\centering
+\begin{tabular}{|cccccccc|}
+\hline
+\multicolumn{8}{|c|}{Average S3 Storage Used And Lambda Runtime For Different Test Cases}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \\ \hline
+\multicolumn{1}{|c|}{Test} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Input\\ bucket\\ data size\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Intermediate\\ bucket\\ data size\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Output\\ bucket\\ data size\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Number of\\ mapper lambda\\ invocations\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Number of\\ reducer lambda\\ invocations\end{tabular}} & \multicolumn{1}{c|}{\begin{tabular}[c]{@{}c@{}}Avg runtime\\ of mapper \\ lambda\end{tabular}} & \begin{tabular}[c]{@{}c@{}}Avg runtime\\ of reducer\\ lambda\end{tabular} \\ \hline
+Small                      & 3.3 MB                                                                                 & 7.7 MB                                                                                         & 528.1 KB                                                                                 & 8                                                                                                    & 6                                                                                                     & 26500                                                                                          & 20000                                                                     \\
+Medium                     & 61.6 MB                                                                                & 120.2 MB                                                                                       & 7.4 MB                                                                                   & 98                                                                                                   & 80                                                                                                    & 37000                                                                                          & 27000                                                                     \\
+Large                      & 644.1 MB                                                                               & 1100 MB                                                                                        & 156.7 MB                                                                                 & 932                                                                                                  & 800                                                                                                   & 37000                                                                                          & 27000                                                                     \\ \hline
+\end{tabular}
+\end{table}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \end{document}
