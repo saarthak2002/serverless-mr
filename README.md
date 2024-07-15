@@ -1,5 +1,7 @@
 # Serverless MapReduce
 
+[Watch the presentation](https://www.youtube.com/watch?v=xSzWOoZpNrI) or [Read the paper](https://www.youtube.com/watch?v=xSzWOoZpNrI).
+
 ![Serverless MapReduce Architecture Diagram](https://i.imgur.com/SQjgR7Q.png)
 
 MapReduce is a scalable computation model that allows batch processing of enormous datasets. Serverless computing is a cloud programming paradigm in which software can be deployed with resources allocated on-demand without the need to manage server infrastructure. We wanted to bring these two models together and create a Serverless MapReduce implementation that provides the advantages of both worlds, like cost-effectiveness and parallelism. We used AWS Lambda to invoke cloud functions that perform map or reduce tasks and AWS S3 as a distributed object store for inputs, outputs, and intermediate data.
