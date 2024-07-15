@@ -1,6 +1,6 @@
 # Serverless MapReduce
 
-[Watch the presentation](https://www.youtube.com/watch?v=xSzWOoZpNrI) or [Read the paper](https://www.youtube.com/watch?v=xSzWOoZpNrI).
+[Watch the presentation](https://www.youtube.com/watch?v=xSzWOoZpNrI) or [read the paper](https://github.com/saarthak2002/serverless-mr/blob/main/Serverless_MapReduce_Paper.pdf).
 
 ![Serverless MapReduce Architecture Diagram](https://i.imgur.com/SQjgR7Q.png)
 
